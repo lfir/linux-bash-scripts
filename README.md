@@ -16,7 +16,7 @@ official website and replacing the current installation.
 installation as backup during update process)
 
 **Files**
-- `vscode-tarball-updater.sh`: Run as non-root, with env var _appParentDir_
+- `vscode-updater.sh`: Run as non-root, with env var _appParentDir_
 
 **Notes**
 
