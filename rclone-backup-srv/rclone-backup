@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+# Env vars needed:
+# backupTargets - Path to file containing the list of files to be backed up
+# username - User that configured and runs rclone
+# remotePath - rclone's target
+
+set -o errexit
+set -o nounset
+set -o pipefail
+
+readarray -t targets < "$backupTargets"
+isoDate="$(date --iso-860=date)"
+destPath="/tmp/bkp_$isoDate.tar.xz"
+logFile=/var/log/rclone-backup.log
+
+# Redirect all subsequent output (stdout and stderr) to the log file
+exec >> "$logFile" 2>&1
+
+echo ">>> $isoDate - STARTING BACKUP SCRIPT... >>>"
+tar cJf "$destPath" "${targets[@]}"
+chown "$username:$username" "$destPath"
+sudo su "$username" -c "rclone copy $destPath $remotePath"
+rm "$destPath"
+echo '<<< ¡SCRIPT FINISHED! <<<'

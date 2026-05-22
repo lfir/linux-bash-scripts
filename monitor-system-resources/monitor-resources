@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+
+set -o errexit
+set -o nounset
+set -o pipefail
+
+THRESHOLD=90
+cpuAlert=''
+memAlert=''
+diskAlert=''
+
+# Get CPU usage
+# /proc/loadavg: The third field ($3) represents the 15-minute load average.
+# bc: Performs the floating-point arithmetic, and cut extracts the integer portion.
+cores=$(nproc)
+echo "cores: $cores"
+load=$(awk '{print $3}' < /proc/loadavg)
+echo "Past 15-minute load: $load" 
+cpuUsage=$(echo "$load * 100 / $cores" | bc | cut -d. -f1)
+echo "Average CPU usage in the past 15 minutes: $cpuUsage"
+if [[ "$cpuUsage" -gt "$THRESHOLD" ]]; then
+    cpuAlert='- CPU Overload'
+fi
+echo "CPU Alert: $cpuAlert"
+
+# Get memory usage
+memUsage=$(free | grep Mem | awk 'NR==1{printf "%.2f%%", $3*100/$2}')
+echo "MEMORY Usage: $memUsage"
+# Truncate decimal places (not rounding)
+memUsageInt=$(echo "$memUsage" | awk -F'%' '{print $1}' | awk -F'.' '{print $1}')
+echo "MEMORY Usage Int: $memUsageInt"
+if [[ "$memUsageInt" -gt "$THRESHOLD" ]]; then
+    memAlert='- Memory Overload'
+fi
+echo "Memory Alert: $memAlert"
+
+# Get disk usage
+diskUsage=$(df -h | awk 'NR==2 {print $5}' | sed 's/%//')
+echo "Disk Usage: $diskUsage"
+if [[ "$diskUsage" -gt "$THRESHOLD" ]]; then
+    diskAlert='- Disk Overload'
+fi
+echo "Disk Alert: $diskAlert"
+
+alertMessages=''
+if [[ -n "$cpuAlert" ]]; then
+    alertMessages="$cpuAlert\n"
+fi
+if [[ -n "$memAlert" ]]; then
+    alertMessages+="$memAlert\n"
+fi
+if [[ -n "$diskAlert" ]]; then
+    alertMessages+="$diskAlert"
+fi
+echo -e "Final Alert Messages:\n$alertMessages"
+
+if [[ -n "$alertMessages" ]]; then
+    echo -e "$alertMessages" | mail -s 'Cron <run-parts> System Resources Alert' root
+fi
