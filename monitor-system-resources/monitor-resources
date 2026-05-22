@@ -13,7 +13,7 @@ diskAlert=''
 # /proc/loadavg: The third field ($3) represents the 15-minute load average.
 # bc: Performs the floating-point arithmetic, and cut extracts the integer portion.
 cores=$(nproc)
-echo "cores: $cores"
+echo "CPU cores: $cores"
 load=$(awk '{print $3}' < /proc/loadavg)
 echo "Past 15-minute load: $load" 
 cpuUsage=$(echo "$load * 100 / $cores" | bc | cut -d. -f1)
