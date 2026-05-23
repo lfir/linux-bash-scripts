@@ -21,7 +21,7 @@ compare() {
 }
 
 cleanUpAndExitWithError() {
-    cd - &>/dev/null || exit
+    cd - >/dev/null
     rm -rf "$tmpdir"
     exit 1
 }
@@ -52,7 +52,7 @@ if (( cmp == 1 )); then
 
     if mv "$appParentDir/$appDir" old ; then
         if mv "$appDir" "$appParentDir" ; then
-            cd - &>/dev/null || exit
+            cd - >/dev/null
             rm -rf "$tmpdir"
             echo 'Replacement complete. Goodbye.'
         else
