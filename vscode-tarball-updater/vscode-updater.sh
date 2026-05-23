@@ -3,7 +3,6 @@
 # Env vars needed:
 # appParentDir - Full path of the dir where VSCode's main folder is located
 
-set -o errexit
 set -o nounset
 set -o pipefail
 
