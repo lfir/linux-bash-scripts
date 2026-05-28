@@ -15,7 +15,8 @@ destPath="/tmp/bkp_$isoDate.tar.xz"
 logFile=/var/log/rclone-backup.log
 
 # Redirect all subsequent output (stdout and stderr) to the log file
-exec >> "$logFile" 2>&1
+# but also maintain term output so it is included in Anacron's email notifications
+exec > >(tee -a "$logFile") 2>&1
 
 echo ">>> $isoDate - STARTING BACKUP SCRIPT... >>>"
 tar cJf "$destPath" "${targets[@]}"
